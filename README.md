@@ -1,77 +1,46 @@
 # ChatGPT Application
 
-This is a ChatGPT application built using the [Flet](https://flet.dev/) framework for the frontend and [g4f](https://github.com/xtekky/gpt4free) for connecting to the OpenAI GPT-4 models. The application allows users to interact with different GPT-4 models and change the theme of the application between light and dark modes.
+The ChatGPT Application is a user-friendly interface built with Flet that allows users to interact with the ChatGPT models provided by the `g4f.client` library. The application features a customizable interface with support for different themes and models, making it a versatile tool for various use cases.
 
 ## Features
 
-- **Multiple GPT-4 Models**: Users can select from different GPT-4 models (`gpt-4`, `gpt-4-turbo`, `gpt-4o`) to send their messages.
-- **Theme Switching**: Users can switch between light and dark themes.
-- **Chat History**: Displays the chat history with user and ChatGPT messages.
-- **Settings Dialog**: A settings dialog for changing the model and theme.
-
-## Requirements
-
-- Python 3.7+
-- `flet` package
-- `g4f` package
+- **Model Selection:** Choose from multiple ChatGPT models, including "gpt-4," "gpt-4-turbo," and "gpt-4o."
+- **Theme Customization:** Switch between Dark and Light themes for a better visual experience.
+- **Persistent Settings:** Save and load user preferences (theme and model) between sessions.
+- **Message History:** View and manage chat history with the ability to clear previous messages.
+- **Settings Dialog:** Easily configure application settings through a user-friendly dialog.
 
 ## Installation
 
-1. Clone the repository:
-    ```bash
-    git clone https://github.com/Jesewe/ChatGPT-Application.git
-    cd ChatGPT-Application
-    ```
+1. **Clone the repository:**
 
-2. Install the required packages:
-    ```bash
-    pip install flet g4f
-    ```
+   ```bash
+   git clone https://github.com/Jesewe/chatgpt-application.git
+   cd chatgpt-application
+   ```
+
+2. **Install the required dependencies:**
+
+   ```bash
+   pip install flet g4f
+   ```
+
+3. **Run the application:**
+
+   ```bash
+   python main.py
+   ```
+
+## Configuration
+
+The application saves user preferences (selected theme and model) to a configuration file located at `~/Documents/chat_app_config.json`. This ensures that your settings are retained between sessions.
 
 ## Usage
 
-1. Run the application:
-    ```bash
-    python main.py
-    ```
-
-2. Interact with the ChatGPT application by typing your messages and clicking the "Send" button.
-
-3. Open the settings dialog by clicking the "Settings" button. Here you can switch between different models and themes.
-
-## Code Explanation
-
-- The application is built using the Flet framework for the UI components.
-- The `g4f` client is used to communicate with the GPT-4 models.
-- The main layout consists of a title, a chat messages container, and input fields for sending messages.
-- A settings dialog allows users to select the model and theme.
-- The theme of the application is dynamically updated based on user selection to ensure readability.
-
-### Main Components
-
-1. **Models and Themes**: Dropdowns to select the desired GPT-4 model and theme.
-    ```python
-    models = ["gpt-4", "gpt-4-turbo", "gpt-4o"]
-    themes = {"Dark": ft.ThemeMode.DARK, "Light": ft.ThemeMode.LIGHT}
-    ```
-
-2. **Message Container**: A list view to display chat messages.
-    ```python
-    messages_container = ft.ListView(expand=True, spacing=10, padding=10, auto_scroll=True)
-    ```
-
-3. **Send Message Function**: Handles sending messages and displaying responses.
-    ```python
-    def send_message(e: ft.ControlEvent):
-        ...
-    ```
-
-4. **Settings Dialog**: Allows users to change the theme and model.
-    ```python
-    settings_dialog = ft.AlertDialog(
-        ...
-    )
-    ```
+1. **Starting the Application:** Run the `main.py` script to start the application. The main window will open, displaying the chat interface.
+2. **Sending Messages:** Enter your message in the input field and click the "Send" button. The message will be sent to the selected ChatGPT model, and the response will be displayed in the chat history.
+3. **Changing Settings:** Click the "Settings" button to open the settings dialog. Here, you can change the theme and model. Your changes will be saved automatically.
+4. **Clearing History:** Click the "Clear History" button to clear the chat history.
 
 ## Contributing
 
