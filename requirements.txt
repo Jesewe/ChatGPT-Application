@@ -1,0 +1,4 @@
+flet
+requests
+g4f
+packaging

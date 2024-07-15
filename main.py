@@ -2,11 +2,14 @@ import os
 import json
 import flet as ft
 from g4f.client import Client
+from datetime import datetime
+import requests
+from packaging import version
 
 client = Client()
 
 MODELS = [
-    "gpt-4", "gpt-4-turbo", "gpt-4o"
+    "gpt-3.5-turbo", "gpt-4", "gpt-4-turbo", "gpt-4o"
 ]
 
 THEMES = {
@@ -15,6 +18,9 @@ THEMES = {
 }
 
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "Documents", "chat_app_config.json")
+VERSION = "v1.0.3"
+GITHUB_REPO_URL = "https://api.github.com/repos/Jesewe/ChatGPT-Application/tags"
+GITHUB_PROJECT_URL = "https://github.com/Jesewe/ChatGPT-Application"
 
 class ChatApp:
     def __init__(self, page: ft.Page):
@@ -38,6 +44,7 @@ class ChatApp:
         self.settings_button = ft.IconButton(icon=ft.icons.SETTINGS, on_click=self.open_settings)
 
         self.settings_dialog = self.create_settings_dialog()
+        self.page.overlay.append(self.settings_dialog)
 
         self.setup_ui()
 
@@ -123,22 +130,40 @@ class ChatApp:
             self.user_input.value = ""
             self.page.update()
 
+            self.add_message("System", "ChatGPT is typing...", ft.colors.GREY, copy_button=False)
+            self.page.update()
+
             bot_message = self.get_bot_response(model, user_message)
+            self.messages_container.controls.pop()
             self.add_message("ChatGPT", bot_message, ft.colors.LIGHT_BLUE, copy_button=True)
             self.user_input.focus()
 
     def get_bot_response(self, model, user_message):
         try:
+            prompt = f"""
+            You are a helpful and knowledgeable assistant. Here is the context of the conversation so far:
+            {self.format_chat_history()}
+            
+            Respond to the user's new message thoughtfully and informatively:
+            User: {user_message}
+            """
             response = client.chat.completions.create(
                 model=model,
-                messages=[{"role": "user", "content": user_message}],
+                messages=[{"role": "user", "content": prompt}],
             )
             return response.choices[0].message.content
         except Exception as ex:
             return f"Error: Unable to get response from ChatGPT ({ex})"
 
+    def format_chat_history(self):
+        return "\n".join(f"{sender}: {message}" for sender, message in self.chat_history)
+
     def add_message(self, sender: str, message: str, color: str, copy_button: bool = False):
-        message_control = ft.Text(f"{sender}: {message}", color=color)
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        message_control = ft.Container(
+            content=ft.Text(f"[{timestamp}] {sender}: {message}", color=color),
+            width=1000
+        )
         controls = [message_control]
         if copy_button:
             copy_button_control = ft.IconButton(icon=ft.icons.COPY, on_click=lambda e: self.copy_to_clipboard(message))
@@ -149,7 +174,7 @@ class ChatApp:
 
     def copy_to_clipboard(self, message: str):
         self.page.set_clipboard(message)
-        self.page.show_snack_bar(ft.SnackBar(content=ft.Text("Text copied to clipboard!")))
+        self.page.open(ft.SnackBar(content=ft.Text("Text copied to clipboard!")))
 
     def clear_history(self, e: ft.ControlEvent):
         self.messages_container.controls.clear()
@@ -157,7 +182,6 @@ class ChatApp:
         self.page.update()
 
     def open_settings(self, e: ft.ControlEvent):
-        self.page.dialog = self.settings_dialog
         self.settings_dialog.open = True
         self.page.update()
 
@@ -182,6 +206,9 @@ class ChatApp:
                     self.selected_theme,
                     ft.Text("Choose Model:", style="bodyMedium", color=ft.colors.GREY),
                     self.selected_model,
+                    ft.Text(f"Version: {VERSION}", style="bodyMedium", color=ft.colors.GREY),
+                    ft.ElevatedButton(text="Check for Updates", icon=ft.icons.UPDATE, on_click=self.check_for_updates),
+                    ft.TextButton("GitHub Project", icon=ft.icons.LINK, url=GITHUB_PROJECT_URL),
                 ],
                 spacing=20
             ),
@@ -190,6 +217,18 @@ class ChatApp:
             ],
             actions_alignment=ft.MainAxisAlignment.END
         )
+
+    def check_for_updates(self, e: ft.ControlEvent):
+        try:
+            response = requests.get(GITHUB_REPO_URL)
+            response.raise_for_status()
+            latest_version = response.json()[0]["name"]
+            if version.parse(latest_version) > version.parse(VERSION):
+                self.page.open(ft.SnackBar(content=ft.Text(f"New version available: {latest_version}")))
+            else:
+                self.page.open(ft.SnackBar(content=ft.Text("You are using the latest version")))
+        except requests.RequestException as ex:
+            self.page.open(ft.SnackBar(content=ft.Text(f"Error checking for updates: {ex}")))
 
 def main(page: ft.Page):
     ChatApp(page)
